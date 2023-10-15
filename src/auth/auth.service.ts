@@ -1,4 +1,9 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthDto } from './dto';
 import * as bcrypt from 'bcrypt';
@@ -14,16 +19,27 @@ export class AuthService {
 
   async signupLocal(dto: AuthDto): Promise<Tokens> {
     const hash = await this.hashData(dto.password);
-    const newUser = await this.prisma.user.create({
-      data: {
-        email: dto.email,
-        hash,
-      },
-    });
+    try {
+      const newUser = await this.prisma.user.create({
+        data: {
+          email: dto.email,
+          hash,
+        },
+      });
 
-    const tokens = await this.getTokens(newUser.id, newUser.email);
-    await this.updateRtHash(newUser.id, tokens.refresh_token);
-    return tokens;
+      const tokens = await this.getTokens(newUser.id, newUser.email);
+      await this.updateRtHash(newUser.id, tokens.refresh_token);
+      return tokens;
+    } catch (error) {
+      const { code: prismaErrorCode } = error;
+      //? "Unique constraint failed on the {constraint}"
+      if (prismaErrorCode === 'P2002') {
+        throw new HttpException(
+          'The email address is already taken. Please choose another one.',
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
+    }
   }
 
   async signinLocal(dto: AuthDto): Promise<Tokens> {
