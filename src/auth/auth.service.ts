@@ -39,6 +39,8 @@ export class AuthService {
           HttpStatus.UNPROCESSABLE_ENTITY,
         );
       }
+      //? in case of the other errors
+      throw new ForbiddenException('Access denied');
     }
   }
 
