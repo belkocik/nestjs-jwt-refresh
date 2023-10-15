@@ -40,7 +40,10 @@ export class AuthService {
         );
       }
       //? in case of the other errors
-      throw new ForbiddenException('Access denied');
+      throw new HttpException(
+        'Something went wrong...',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
