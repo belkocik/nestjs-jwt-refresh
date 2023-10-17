@@ -10,6 +10,7 @@ import * as bcrypt from 'bcrypt';
 import { Tokens } from './types';
 import { JwtService } from '@nestjs/jwt';
 import { I18nService } from 'nestjs-i18n';
+import { UserIdDto } from './dto/user-id.dto';
 
 @Injectable()
 export class AuthService {
@@ -49,7 +50,7 @@ export class AuthService {
     }
   }
 
-  async signinLocal(dto: AuthDto): Promise<Tokens> {
+  async signinLocal(dto: AuthDto, userIdDto: UserIdDto): Promise<Tokens> {
     const user = await this.prisma.user.findUnique({
       where: {
         email: dto.email,
@@ -65,6 +66,14 @@ export class AuthService {
 
     const tokens = await this.getTokens(user.id, user.email);
     await this.updateRtHash(user.id, tokens.refresh_token);
+
+    if (userIdDto.containsUserId === 'true') {
+      return {
+        ...tokens,
+        user_id: user.id,
+      };
+    }
+
     return tokens;
   }
   async logout(userId: number) {
