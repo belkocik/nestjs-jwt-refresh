@@ -9,10 +9,12 @@ import { AuthDto } from './dto';
 import * as bcrypt from 'bcrypt';
 import { Tokens } from './types';
 import { JwtService } from '@nestjs/jwt';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class AuthService {
   constructor(
+    private readonly i18n: I18nService,
     private prisma: PrismaService,
     private jwtService: JwtService,
   ) {}
@@ -35,7 +37,7 @@ export class AuthService {
       //? "Unique constraint failed on the {constraint}"
       if (prismaErrorCode === 'P2002') {
         throw new HttpException(
-          'The email address is already taken. Please choose another one.',
+          this.i18n.t('exceptions.emailMustBeUnique'),
           HttpStatus.UNPROCESSABLE_ENTITY,
         );
       }
