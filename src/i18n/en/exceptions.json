@@ -1,5 +1,5 @@
 {
-  "accessDeniedMsg": "Access denied",
+  "accessDeniedMsg": "Access denied.",
   "internalServerErrorBaseMsg": "Something went wrong...",
   "emailMustBeUnique": "The email address is already taken. Please choose another one."
 }
