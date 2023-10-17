@@ -43,7 +43,7 @@ export class AuthService {
       }
       //? in case of the other errors
       throw new HttpException(
-        'Something went wrong...',
+        this.i18n.t('exceptions.internalServerErrorBaseMsg'),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -56,10 +56,12 @@ export class AuthService {
       },
     });
 
-    if (!user) throw new ForbiddenException('Access denied');
+    if (!user)
+      throw new ForbiddenException(this.i18n.t('exceptions.accessDeniedMsg'));
 
     const passwordMatches = await bcrypt.compare(dto.password, user.hash);
-    if (!passwordMatches) throw new ForbiddenException('Access denied');
+    if (!passwordMatches)
+      throw new ForbiddenException(this.i18n.t('exceptions.accessDeniedMsg'));
 
     const tokens = await this.getTokens(user.id, user.email);
     await this.updateRtHash(user.id, tokens.refresh_token);
@@ -86,10 +88,12 @@ export class AuthService {
       },
     });
 
-    if (!user) throw new ForbiddenException('Access denied');
+    if (!user)
+      throw new ForbiddenException(this.i18n.t('exceptions.accessDeniedMsg'));
 
     const rtMatches = bcrypt.compare(rt, user.hashedRt);
-    if (!rtMatches) throw new ForbiddenException('Access denied');
+    if (!rtMatches)
+      throw new ForbiddenException(this.i18n.t('exceptions.accessDeniedMsg'));
 
     const tokens = await this.getTokens(user.id, user.email);
     await this.updateRtHash(user.id, tokens.refresh_token);
