@@ -9,10 +9,13 @@ import { AuthDto } from './dto';
 import * as bcrypt from 'bcrypt';
 import { Tokens } from './types';
 import { JwtService } from '@nestjs/jwt';
+import { I18nService } from 'nestjs-i18n';
+import { UserIdDto } from './dto/user-id.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
+    private readonly i18n: I18nService,
     private prisma: PrismaService,
     private jwtService: JwtService,
   ) {}
@@ -35,29 +38,42 @@ export class AuthService {
       //? "Unique constraint failed on the {constraint}"
       if (prismaErrorCode === 'P2002') {
         throw new HttpException(
-          'The email address is already taken. Please choose another one.',
+          this.i18n.t('exceptions.emailMustBeUnique'),
           HttpStatus.UNPROCESSABLE_ENTITY,
         );
       }
       //? in case of the other errors
-      throw new ForbiddenException('Access denied');
+      throw new HttpException(
+        this.i18n.t('exceptions.internalServerErrorBaseMsg'),
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
-  async signinLocal(dto: AuthDto): Promise<Tokens> {
+  async signinLocal(dto: AuthDto, userIdDto: UserIdDto): Promise<Tokens> {
     const user = await this.prisma.user.findUnique({
       where: {
         email: dto.email,
       },
     });
 
-    if (!user) throw new ForbiddenException('Access denied');
+    if (!user)
+      throw new ForbiddenException(this.i18n.t('exceptions.accessDeniedMsg'));
 
     const passwordMatches = await bcrypt.compare(dto.password, user.hash);
-    if (!passwordMatches) throw new ForbiddenException('Access denied');
+    if (!passwordMatches)
+      throw new ForbiddenException(this.i18n.t('exceptions.accessDeniedMsg'));
 
     const tokens = await this.getTokens(user.id, user.email);
     await this.updateRtHash(user.id, tokens.refresh_token);
+
+    if (userIdDto.containsUserId === 'true') {
+      return {
+        ...tokens,
+        user_id: user.id,
+      };
+    }
+
     return tokens;
   }
   async logout(userId: number) {
@@ -81,10 +97,12 @@ export class AuthService {
       },
     });
 
-    if (!user) throw new ForbiddenException('Access denied');
+    if (!user)
+      throw new ForbiddenException(this.i18n.t('exceptions.accessDeniedMsg'));
 
     const rtMatches = bcrypt.compare(rt, user.hashedRt);
-    if (!rtMatches) throw new ForbiddenException('Access denied');
+    if (!rtMatches)
+      throw new ForbiddenException(this.i18n.t('exceptions.accessDeniedMsg'));
 
     const tokens = await this.getTokens(user.id, user.email);
     await this.updateRtHash(user.id, tokens.refresh_token);

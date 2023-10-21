@@ -1,0 +1,5 @@
+{
+  "accessDeniedMsg": "Brak dostępu.",
+  "internalServerErrorBaseMsg": "Coś poszło nie tak...",
+  "emailMustBeUnique": "Adres e-mail jest już zajęty. Proszę wybrać inny."
+}
