@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Post,
   Query,
+  UseFilters,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -17,8 +18,10 @@ import {
   Public,
 } from 'src/common/decorators';
 import { UserIdDto } from './dto/user-id.dto';
+import { PrismaClientExceptionFilter } from 'src/prisma-client-exception/prisma-client-exception.filter';
 
 @Controller('auth')
+@UseFilters(PrismaClientExceptionFilter)
 export class AuthController {
   constructor(private authService: AuthService) {}
 
