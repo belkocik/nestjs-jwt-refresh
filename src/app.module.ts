@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
-import { PrismaModule } from './prisma/prisma.module';
+import { PrismaModule } from 'nestjs-prisma';
 import { APP_GUARD } from '@nestjs/core';
 import { AtGuard } from './common/guards';
 import { ConfigModule } from '@nestjs/config';
 import { validate } from './config/env.validation';
+
 import {
   AcceptLanguageResolver,
   HeaderResolver,
@@ -32,7 +33,12 @@ import { join } from 'path';
       ],
     }),
     AuthModule,
-    PrismaModule,
+    PrismaModule.forRoot({
+      isGlobal: true,
+      prismaServiceOptions: {
+        explicitConnect: true,
+      },
+    }),
   ],
   providers: [
     {
