@@ -8,6 +8,14 @@ class EnvironmentVariables {
 
   @IsNotEmpty()
   @IsString()
+  RT_SECRET: string;
+
+  @IsNotEmpty()
+  @IsString()
+  AT_SECRET: string;
+
+  @IsNotEmpty()
+  @IsString()
   POSTGRES_USER: string;
 
   @IsNotEmpty()
